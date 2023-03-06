@@ -1,0 +1,22 @@
+[versions]
+quarkus = "2.16.4.Final"
+
+[libraries]
+quarkus_platform = { group = "io.quarkus.platform", name = "quarkus-bom", version.ref = "quarkus" }
+quarkus_arc = { group = "io.quarkus", name = "quarkus-arc" }
+quarkus_reasteasy_reactive = { group = "io.quarkus", name = "quarkus-resteasy-reactive" }
+quarkus_reasteasy_reactive_jackson = { group = "io.quarkus", name = "quarkus-resteasy-reactive-jackson" }
+quarkus_kafka = { group = "io.quarkus", name = "quarkus-smallrye-reactive-messaging-kafka" }
+quarkus_kafkaStreams = { group = "io.quarkus", name = "quarkus-kafka-streams" }
+quarkus_apicurioAvro = { group = "io.quarkus", name = "quarkus-apicurio-registry-avro" }
+quarkus_avro = { group = "io.quarkus", name = "quarkus-avro" }
+quarkus_junit = { group = "io.quarkus", name = "quarkus-junit5" }
+quarkus_junit_mockito = { group = "io.quarkus", name = "quarkus-junit5-mockito" }
+streamsBootstrap = { group = "com.bakdata.kafka", name = "streams-bootstrap", version = "2.9.0" }
+
+
+[plugins]
+quarkus = { id = "io.quarkus", version.ref = "quarkus" }
+lombok = { id = "io.freefair.lombok", version = "6.6.3" }
+avro = { id = "com.commercehub.gradle.plugin.avro-base", version = "0.9.1" }
+

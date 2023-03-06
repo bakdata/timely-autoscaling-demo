@@ -1,0 +1,33 @@
+{
+  "namespace": "com.bakdata.ks23",
+  "type": "record",
+  "name": "AdFeature",
+  "fields": [
+    {
+      "name": "adGroupId",
+      "type": "int"
+    },
+    {
+      "name": "categoryId",
+      "type": "int"
+    },
+    {
+      "name": "campaignId",
+      "type": "int"
+    },
+    {
+      "name": "brandId",
+      "type": [
+        "null",
+        "int"
+      ]
+    },
+    {
+      "name": "price",
+      "type": [
+        "null",
+        "double"
+      ]
+    }
+  ]
+}

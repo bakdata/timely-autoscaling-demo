@@ -1,0 +1,30 @@
+{
+  "namespace": "com.bakdata.ks23",
+  "type": "record",
+  "name": "Sample",
+  "fields": [
+    {
+      "name": "userId",
+      "type": "int"
+    },
+    {
+      "name": "timestamp",
+      "type": {
+        "type": "long",
+        "logicalType": "timestamp-millis"
+      }
+    },
+    {
+      "name": "adgroupId",
+      "type": "int"
+    },
+    {
+      "name": "pid",
+      "type": "string"
+    },
+    {
+      "name": "isClick",
+      "type": "boolean"
+    }
+  ]
+}

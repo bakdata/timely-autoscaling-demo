@@ -1,0 +1,49 @@
+{
+  "namespace": "com.bakdata.ks23",
+  "type": "record",
+  "name": "UserProfile",
+  "fields": [
+    {
+      "name": "userId",
+      "type": "int"
+    },
+    {
+      "name": "microGroupId",
+      "type": "int"
+    },
+    {
+      "name": "cmsGroupId",
+      "type": "int"
+    },
+    {
+      "name": "gender",
+      "type": "int"
+    },
+    {
+      "name": "ageLevel",
+      "type": "int"
+    },
+    {
+      "name": "consumptionGrade",
+      "type": [
+        "null",
+        "int"
+      ]
+    },
+    {
+      "name": "shoppingLevel",
+      "type": "int"
+    },
+    {
+      "name": "occupation",
+      "type": "int"
+    },
+    {
+      "name": "cityLevel",
+      "type": [
+        "null",
+        "int"
+      ]
+    }
+  ]
+}
