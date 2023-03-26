@@ -13,4 +13,4 @@ out/
 !**/src/main/**/out/
 !**/src/test/**/out/
 
-source/producer/src/main/resources/data.zip
+source/producer/src/main/jib/data.zip

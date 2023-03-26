@@ -1,0 +1,4 @@
+name: cluster
+kafka:
+  version: "3.4.0"
+  replicas: 3

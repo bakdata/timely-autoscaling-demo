@@ -1,0 +1,13 @@
+console:
+  config:
+    kafka:
+      brokers:
+        - cluster-kafka-bootstrap.kafka:9092
+
+      schemaRegistry:
+        enabled: true
+        urls:
+          - http://k8kafka-cp-schema-registry.kafka:8081
+
+secret:
+  create: false

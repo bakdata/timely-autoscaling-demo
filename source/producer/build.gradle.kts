@@ -15,12 +15,16 @@ repositories {
 
 dependencies {
     implementation(enforcedPlatform(libs.quarkus.platform))
+    implementation(libs.quarkus.jib)
     implementation(libs.quarkus.arc)
+    implementation(libs.quarkus.resteasy.client)
     implementation(libs.quarkus.reasteasy.reactive.jackson)
     implementation(libs.quarkus.kafka)
-    implementation(libs.quarkus.apicurioAvro)
+    implementation(libs.quarkus.kafka.registry)
+    implementation(libs.confluent.avro) {
+        exclude(group = "jakarta.ws.rs", module = "jakarta.ws.rs-api")
+    }
     implementation((project(":kafka-common")))
-    testImplementation("io.quarkus:quarkus-test-kafka-companion")
     testImplementation(libs.quarkus.junit)
 }
 

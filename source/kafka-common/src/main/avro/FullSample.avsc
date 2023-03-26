@@ -1,0 +1,38 @@
+{
+  "namespace": "com.bakdata.ks23",
+  "type": "record",
+  "name": "FullSample",
+  "fields": [
+    {
+      "name": "userId",
+      "type": "int"
+    },
+    {
+      "name": "timestamp",
+      "type": {
+        "type": "long",
+        "logicalType": "timestamp-millis"
+      }
+    },
+    {
+      "name": "adgroupId",
+      "type": "int"
+    },
+    {
+      "name": "pid",
+      "type": "string"
+    },
+    {
+      "name": "isClick",
+      "type": "boolean"
+    },
+    {
+      "name": "userProfile",
+      "type": "com.bakdata.ks23.UserProfile"
+    },
+    {
+      "name": "adFeature",
+      "type": "com.bakdata.ks23.AdFeature"
+    }
+  ]
+}

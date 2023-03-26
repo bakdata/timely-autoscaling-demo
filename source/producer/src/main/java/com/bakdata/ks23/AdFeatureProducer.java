@@ -1,6 +1,7 @@
 package com.bakdata.ks23;
 
 import io.smallrye.mutiny.Multi;
+import io.smallrye.reactive.messaging.kafka.Record;
 import javax.enterprise.context.ApplicationScoped;
 import org.eclipse.microprofile.reactive.messaging.Outgoing;
 
@@ -15,10 +16,13 @@ public class AdFeatureProducer {
     }
 
     @Outgoing("ad-feature-out")
-    public Multi<AdFeature> produceUserProfiles() {
+    public Multi<Record<Integer, AdFeature>> produceUserProfiles() {
         if (!this.producerConfig.adFeature().enabled()) {
             return Multi.createFrom().empty();
         }
-        return Multi.createFrom().items(this.zipCsvReader.readZippedCsv("data.zip", "ad_feature.csv"));
+
+        return Multi.createFrom()
+                .items(this.zipCsvReader.readZippedCsv(this.producerConfig.zipPath(), "ad_feature.csv"))
+                .map(adFeature -> Record.of(adFeature.getAdGroupId(), adFeature));
     }
 }

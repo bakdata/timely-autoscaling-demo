@@ -1,6 +1,7 @@
 package com.bakdata.ks23;
 
 import io.smallrye.mutiny.Multi;
+import io.smallrye.reactive.messaging.kafka.Record;
 import javax.enterprise.context.ApplicationScoped;
 import org.eclipse.microprofile.reactive.messaging.Outgoing;
 
@@ -16,11 +17,13 @@ public final class UserProfileProducer {
     }
 
     @Outgoing("user-profile-out")
-    public Multi<UserProfile> produceUserProfiles() {
+    public Multi<Record<Integer, UserProfile>> produceUserProfiles() {
         if (!this.producerConfig.userProfile().enabled()) {
             return Multi.createFrom().empty();
         }
-        return Multi.createFrom().items(this.zipCsvReader.readZippedCsv("data.zip", "user_profile.csv"));
+        return Multi.createFrom()
+                .items(this.zipCsvReader.readZippedCsv(this.producerConfig.zipPath(), "user_profile.csv"))
+                .map(profile -> Record.of(profile.getUserId(), profile));
     }
 
 }

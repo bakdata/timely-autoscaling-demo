@@ -1,0 +1,17 @@
+{{ $currentScope := .}}
+{{ range $path, $_ :=  .Files.Glob  "**.json" }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ $.Values.name }}-dashboard-{{ trimPrefix "dashboards/" $path | trimSuffix ".json"}}
+  labels:
+    {{- with $currentScope}}
+    {{- include "kafka-cluster.labels" . | nindent 4 }}
+    {{- end }}
+    grafana_dashboard: "1"
+data:
+  {{ $.Values.name }}-{{ trimPrefix "dashboards/" $path | trimSuffix ".json"}}-dashboard.json: |
+{{ $.Files.Get $path | nindent 4 }}
+---
+{{ end }}
+

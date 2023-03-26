@@ -1,0 +1,25 @@
+- type: producer
+  name: user-profile-producer
+  app:
+    replicaCount: 1
+    image: ks23-registry:5000/ks23/ks23-producer
+    imageTag: 1.0-SNAPSHOT
+    commandLine:
+      KS23_PRODUCER_USER_PROFILE_ENABLED: true
+    prometheus:
+      jmx:
+        enabled: false
+    debug: true
+
+- type: producer
+  name: ad-feature-producer
+  app:
+    replicaCount: 1
+    image: ks23-registry:5000/ks23/ks23-producer
+    imageTag: 1.0-SNAPSHOT
+    commandLine:
+      KS23_PRODUCER_AD_FEATURE_ENABLED: true
+    prometheus:
+      jmx:
+        enabled: false
+    debug: true

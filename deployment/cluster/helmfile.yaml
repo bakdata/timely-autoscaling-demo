@@ -1,0 +1,72 @@
+environments:
+  local:
+    kubeContext: k3d-ks23
+---
+repositories:
+  - name: strimzi
+    url: https://strimzi.io/charts/
+  - name: prometheus-community
+    url: https://prometheus-community.github.io/helm-charts
+  - name: confluentinc
+    url: https://confluentinc.github.io/cp-helm-charts/
+  - name: redpanda
+    url: https://charts.redpanda.com/
+
+
+helmDefaults:
+  wait: true
+  waitForJobs: true
+  timeout: 599
+
+releases:
+  - name: kube-prometheus-stack
+    namespace: monitoring
+    createNamespace: true
+    chart: prometheus-community/kube-prometheus-stack
+    # Must be set to properly install CRDs
+    disableValidationOnInstall: true
+    values:
+      - "./manifests/kube-prometheus-stack.yaml"
+
+  - name: strimzi
+    namespace: strimzi
+    createNamespace: true
+    chart: strimzi/strimzi-kafka-operator
+    version: 0.34.0
+    values:
+      - "./manifests/strimzi.yaml"
+
+  - name: strimzi-kafka
+    namespace: kafka
+    createNamespace: true
+    chart: "./charts/kafka-cluster"
+    needs:
+      - strimzi/strimzi
+
+  - name: k8kafka-cp-schema-registry
+    chart: "confluentinc/cp-helm-charts"
+    version: "0.6.0"
+    namespace: kafka
+    values:
+      - "./manifests/schema-registry.yaml"
+    needs:
+      - kafka/strimzi-kafka
+
+  - name: k8kafka-cp-kafka-rest
+    chart: "confluentinc/cp-helm-charts"
+    version: "0.6.0"
+    namespace: kafka
+    values:
+      - "./manifests/kafka-rest.yaml"
+    needs:
+      - kafka/strimzi-kafka
+
+  - name: redpanda-console
+    namespace: kafka
+    chart: "redpanda/console"
+    version: 0.5.6
+    needs:
+      - kafka/strimzi-kafka
+      - kafka/k8kafka-cp-schema-registry
+    values:
+      - "./manifests/redpanda-console.yaml"

@@ -25,7 +25,7 @@ public class SampleProducer {
         return Multi.createBy().combining()
                 .streams(
                         Multi.createFrom().ticks().every(Duration.ofMillis(this.config.sample().millisTicks())),
-                        Multi.createFrom().items(this.zipCsvReader.readZippedCsv("data.zip", "raw_sample.csv"))
+                        Multi.createFrom().items(this.zipCsvReader.readZippedCsv(this.config.zipPath(), "raw_sample.csv"))
                 )
                 .using((tick, sample) -> sample);
     }

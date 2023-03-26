@@ -5,7 +5,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UncheckedIOException;
-import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.Instant;
 import java.util.List;
 import java.util.function.Supplier;
@@ -28,13 +29,12 @@ public class ZipCsvReader<T extends GenericRecord> {
         this.supplier = supplier;
     }
 
-    public Stream<T> readZippedCsv(final String archive, final String file) {
+    public Stream<T> readZippedCsv(final Path archive, final String file) {
         try {
-            final URL resource = ZipCsvReader.class.getClassLoader().getResource(archive);
-            if (resource == null) {
+            if (!Files.exists(archive)) {
                 throw new RuntimeException("Archive %s not found".formatted(archive));
             }
-            final ZipFile zipFile = new ZipFile(resource.getPath());
+            final ZipFile zipFile = new ZipFile(archive);
             final ZipArchiveEntry entry = zipFile.getEntry(file);
             final InputStream inputStream = zipFile.getInputStream(entry);
             final BufferedReader bufferedInputStream = new BufferedReader(new InputStreamReader(inputStream));
@@ -56,32 +56,37 @@ public class ZipCsvReader<T extends GenericRecord> {
                 continue;
             }
 
-            final Type type = schema.isUnion() ? findTypeInNullableUnion(schema) : schema.getType();
-
-            if (type == Type.STRING) {
-                record.put(field.pos(), value);
-                continue;
-            }
-
-            if (type == Type.DOUBLE) {
-                record.put(field.pos(), Double.parseDouble(value));
-                continue;
-            }
-
-            final int parsedInt = Integer.parseInt(value);
-
-            if (type == Type.INT || type == Type.LONG) {
-                if (schema.getLogicalType() != null) {
-                    record.put(field.pos(), Instant.ofEpochSecond(parsedInt));
-                } else {
-                    record.put(field.pos(), parsedInt);
-                }
-            } else if (type == Type.BOOLEAN) {
-                record.put(field.pos(), parsedInt == 0);
-            }
+            final Object fieldValue = getFieldValue(schema, value);
+            record.put(field.pos(), fieldValue);
 
         }
         return record;
+    }
+
+    private static Object getFieldValue(final Schema schema, final String value) {
+        final Type type = schema.isUnion() ? findTypeInNullableUnion(schema) : schema.getType();
+
+        if (type == Type.STRING) {
+            return value;
+        }
+
+        if (type == Type.DOUBLE) {
+            return Double.parseDouble(value);
+        }
+
+        final int parsedInt = Integer.parseInt(value);
+
+        if (type == Type.INT || type == Type.LONG) {
+            if (schema.getLogicalType() != null) {
+                return Instant.ofEpochSecond(parsedInt);
+            } else {
+                return parsedInt;
+            }
+        } else if (type == Type.BOOLEAN) {
+            return parsedInt == 0;
+        }
+
+        throw new IllegalArgumentException("value '%s' cannot be converted to type %s".formatted(value, type));
     }
 
     private static Type findTypeInNullableUnion(final Schema schema) {

@@ -5,13 +5,16 @@ quarkus = "2.16.4.Final"
 quarkus_platform = { group = "io.quarkus.platform", name = "quarkus-bom", version.ref = "quarkus" }
 quarkus_arc = { group = "io.quarkus", name = "quarkus-arc" }
 quarkus_reasteasy_reactive = { group = "io.quarkus", name = "quarkus-resteasy-reactive" }
+quarkus_resteasy_client = { group = "io.quarkus", name = "quarkus-rest-client-reactive" }
 quarkus_reasteasy_reactive_jackson = { group = "io.quarkus", name = "quarkus-resteasy-reactive-jackson" }
 quarkus_kafka = { group = "io.quarkus", name = "quarkus-smallrye-reactive-messaging-kafka" }
 quarkus_kafkaStreams = { group = "io.quarkus", name = "quarkus-kafka-streams" }
-quarkus_apicurioAvro = { group = "io.quarkus", name = "quarkus-apicurio-registry-avro" }
+quarkus_kafka_registry = { group = "io.quarkus", name = "quarkus-confluent-registry-avro" }
 quarkus_avro = { group = "io.quarkus", name = "quarkus-avro" }
 quarkus_junit = { group = "io.quarkus", name = "quarkus-junit5" }
 quarkus_junit_mockito = { group = "io.quarkus", name = "quarkus-junit5-mockito" }
+quarkus_jib = { group = "io.quarkus", name = "quarkus-container-image-jib" }
+confluent_avro = { group = "io.confluent", name = "kafka-avro-serializer", version = "7.3.2" }
 streamsBootstrap = { group = "com.bakdata.kafka", name = "streams-bootstrap", version = "2.9.0" }
 
 

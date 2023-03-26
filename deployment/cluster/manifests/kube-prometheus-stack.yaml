@@ -1,0 +1,29 @@
+fullnameOverride: "kube-prometheus-stack"
+grafana:
+  sidecar:
+    dashboards:
+      searchNamespace: "ALL"
+prometheus:
+  prometheusSpec:
+    serviceMonitorNamespaceSelector:
+      matchExpressions:
+        - key: kubernetes.io/metadata.name
+          operator: In
+          values:
+            - monitoring
+            - kafka
+            - strimzi
+    podMonitorNamespaceSelector:
+      matchExpressions:
+        - key: kubernetes.io/metadata.name
+          operator: In
+          values:
+            - monitoring
+            - kafka
+            - strimzi
+    serviceMonitorSelector:
+      matchExpressions:
+        - { key: release, operator: In, values: [ kube-prometheus, strimzi-kafka ] }
+    podMonitorSelector:
+      matchExpressions:
+        - { key: release, operator: In, values: [ kube-prometheus, strimzi-kafka ] }
