@@ -1,6 +1,6 @@
-package com.bakdata.ks23;
+package com.bakdata.ks23.producer;
 
-import static com.bakdata.ks23.ProducerConfig.PREFIX;
+import static com.bakdata.ks23.producer.ProducerConfig.PREFIX;
 
 import io.smallrye.config.ConfigMapping;
 import io.smallrye.config.WithDefault;

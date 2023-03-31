@@ -1,0 +1,5 @@
+namespaces:
+  - name: "monitoring"
+  - name: "strimzi"
+  - name: "kafka"
+

@@ -1,0 +1,23 @@
+- type: producer
+  name: static-producer
+  app:
+    replicaCount: 1
+    image: ks23-registry:5000/ks23/ks23-producer
+    imageTag: 1.0-SNAPSHOT
+    commandLine:
+      KS23_PRODUCER_AD_FEATURE_ENABLED: true
+      KS23_PRODUCER_USER_PROFILE_ENABLED: true
+    prometheus:
+      jmx:
+        enabled: false
+    debug: true
+  to:
+    topics:
+      ${pipeline_name}-ad-feature:
+        type: extra
+        role: ad-feature
+        partitions_count: 5
+      ${pipeline_name}-user-profile:
+        type: extra
+        role: user-profile
+        partitions_count: 5

@@ -1,4 +1,4 @@
-package com.bakdata.ks23;
+package com.bakdata.ks23.producer;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -23,22 +23,25 @@ public class ZipCsvReader<T extends GenericRecord> {
 
     private static final Pattern CSV_PATTERN = Pattern.compile(",");
     public static final String NULL = "NULL";
-    private final Supplier<T> supplier;
+    private final Supplier<T> recordSupplier;
 
-    public ZipCsvReader(final Supplier<T> supplier) {
-        this.supplier = supplier;
+    public ZipCsvReader(final Supplier<T> recordSupplier) {
+        this.recordSupplier = recordSupplier;
     }
 
     public Stream<T> readZippedCsv(final Path archive, final String file) {
+        if (!Files.exists(archive)) {
+            throw new RuntimeException("Archive %s not found".formatted(archive));
+        }
+
         try {
-            if (!Files.exists(archive)) {
-                throw new RuntimeException("Archive %s not found".formatted(archive));
-            }
             final ZipFile zipFile = new ZipFile(archive);
             final ZipArchiveEntry entry = zipFile.getEntry(file);
             final InputStream inputStream = zipFile.getInputStream(entry);
             final BufferedReader bufferedInputStream = new BufferedReader(new InputStreamReader(inputStream));
-            return bufferedInputStream.lines().skip(1).map(this::convert);
+            return bufferedInputStream.lines()
+                    .skip(1) // skip heaeder
+                    .map(this::convert);
         } catch (final IOException e) {
             throw new UncheckedIOException(e);
         }
@@ -46,7 +49,7 @@ public class ZipCsvReader<T extends GenericRecord> {
 
     private T convert(final String rawCsvLine) {
         final String[] split = CSV_PATTERN.split(rawCsvLine);
-        final T record = this.supplier.get();
+        final T record = this.recordSupplier.get();
         final List<Field> fields = record.getSchema().getFields();
         for (int i = 0; i < fields.size(); i++) {
             final Field field = fields.get(i);

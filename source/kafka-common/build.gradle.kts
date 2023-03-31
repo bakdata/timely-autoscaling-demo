@@ -1,7 +1,9 @@
 @Suppress("DSL_SCOPE_VIOLATION")
 plugins {
     id("java")
+    id("org.kordamp.gradle.jandex") version "1.1.0"
     alias(libs.plugins.quarkus)
+    alias(libs.plugins.lombok)
 }
 
 group = "com.bakdata"
@@ -14,7 +16,11 @@ repositories {
 
 dependencies {
     implementation(enforcedPlatform(libs.quarkus.platform))
+    implementation(libs.quarkus.arc)
     implementation(libs.quarkus.avro)
+    implementation(libs.streamsBootstrap) {
+        exclude(group = "org.apache.logging.log4j")
+    }
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.8.1")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.8.1")
 }
