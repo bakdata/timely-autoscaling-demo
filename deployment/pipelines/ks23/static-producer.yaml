@@ -7,10 +7,13 @@
     commandLine:
       KS23_PRODUCER_AD_FEATURE_ENABLED: true
       KS23_PRODUCER_USER_PROFILE_ENABLED: true
-    prometheus:
-      jmx:
-        enabled: false
-    debug: true
+    resources:
+      limits:
+        cpu: 2
+        memory: 400Mi
+      requests:
+        cpu: 500m
+        memory: 400Mi
   to:
     topics:
       ${pipeline_name}-ad-feature:

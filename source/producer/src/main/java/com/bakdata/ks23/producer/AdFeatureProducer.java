@@ -40,5 +40,4 @@ public class AdFeatureProducer implements KafkaProducer {
         return this.producerConfig.adFeature().enabled();
     }
 
-
 }

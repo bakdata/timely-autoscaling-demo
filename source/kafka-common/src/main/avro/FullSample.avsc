@@ -28,11 +28,17 @@
     },
     {
       "name": "userProfile",
-      "type": "com.bakdata.ks23.UserProfile"
+      "type": [
+        "null",
+        "com.bakdata.ks23.UserProfile"
+      ]
     },
     {
       "name": "adFeature",
-      "type": "com.bakdata.ks23.AdFeature"
+      "type": [
+        "null",
+        "com.bakdata.ks23.AdFeature"
+      ]
     }
   ]
 }

@@ -1,5 +1,6 @@
 [versions]
 quarkus = "2.16.4.Final"
+confluent = "7.3.2"
 
 [libraries]
 quarkus_platform = { group = "io.quarkus.platform", name = "quarkus-bom", version.ref = "quarkus" }
@@ -14,7 +15,8 @@ quarkus_avro = { group = "io.quarkus", name = "quarkus-avro" }
 quarkus_junit = { group = "io.quarkus", name = "quarkus-junit5" }
 quarkus_junit_mockito = { group = "io.quarkus", name = "quarkus-junit5-mockito" }
 quarkus_jib = { group = "io.quarkus", name = "quarkus-container-image-jib" }
-confluent_avro = { group = "io.confluent", name = "kafka-avro-serializer", version = "7.3.2" }
+confluent_avro_serializer = { group = "io.confluent", name = "kafka-avro-serializer", version.ref = "confluent" }
+confluent_avro_serde = { group = "io.confluent", name = "kafka-streams-avro-serde", version.ref = "confluent" }
 streamsBootstrap = { group = "com.bakdata.kafka", name = "streams-bootstrap", version = "2.9.0" }
 
 

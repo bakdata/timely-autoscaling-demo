@@ -1,0 +1,56 @@
+- type: producer
+  name: sample-producer
+  app:
+    replicaCount: 1
+    image: ks23-registry:5000/ks23/ks23-producer
+    imageTag: 1.0-SNAPSHOT
+    deployment: true
+    commandLine:
+      KS23_PRODUCER_SAMPLE_ENABLED: true
+    resources:
+      limits:
+        cpu: 2
+        memory: 500Mi
+      requests:
+        cpu: 500m
+        memory: 500Mi
+  to:
+    topics:
+      ${pipeline_name}-sample:
+        type: extra
+        role: sample
+        partitions_count: 5
+- type: streams-app
+  name: sample-preprocessor
+  app:
+    replicaCount: 1
+    image: ks23-registry:5000/ks23/ks23-preprocessor
+    imageTag: 1.0-SNAPSHOT
+    commandLine:
+      ID: preprocessor
+    resources:
+      limits:
+        cpu: 2
+        memory: 600Mi
+      requests:
+        cpu: 500m
+        memory: 600Mi
+  from:
+    topics:
+      ${pipeline_name}-sample:
+        type: extra
+        role: sample
+      ${pipeline_name}-ad-feature:
+        type: extra
+        role: ad-feature
+      ${pipeline_name}-user-profile:
+        type: extra
+        role: user-profile
+  to:
+    topics:
+      ${pipeline_name}-full-sample:
+        type: output
+        partitions_count: 5
+      ${pipeline_name}-preprocessor-error:
+        type: error
+        partitions_count: 4

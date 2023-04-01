@@ -14,3 +14,5 @@ out/
 !**/src/test/**/out/
 
 source/producer/src/main/jib/data.zip
+*.env
+docs/diagram

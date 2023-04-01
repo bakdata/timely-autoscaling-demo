@@ -8,16 +8,11 @@ kafka-connector:
 
 kafka-app:
   app:
+    labels:
+      pipeline: ${pipeline_name}
     streams:
       brokers: ${broker}
       schemaRegistryUrl: ${schema_registry_url}
-
-producer:
-  app:
-    labels:
-      pipeline: ${pipeline_name}
-
-streams-app:
-  app:
-    labels:
-      pipeline: ${pipeline_name}
+    prometheus:
+      jmx:
+        enabled: false

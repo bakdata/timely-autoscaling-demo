@@ -21,7 +21,7 @@ dependencies {
     implementation(libs.quarkus.reasteasy.reactive.jackson)
     implementation(libs.quarkus.kafka)
     implementation(libs.quarkus.kafka.registry)
-    implementation(libs.confluent.avro) {
+    implementation(libs.confluent.avro.serializer) {
         exclude(group = "jakarta.ws.rs", module = "jakarta.ws.rs-api")
     }
     implementation((project(":kafka-common")))
@@ -30,4 +30,10 @@ dependencies {
 
 tasks.getByName<Test>("test") {
     useJUnitPlatform()
+}
+
+java {
+    toolchain {
+        version = JavaVersion.VERSION_17
+    }
 }

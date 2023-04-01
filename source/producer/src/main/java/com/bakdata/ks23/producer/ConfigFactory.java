@@ -11,6 +11,7 @@ import java.util.Map;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
+import org.apache.kafka.common.serialization.IntegerSerializer;
 
 @ApplicationScoped
 public class ConfigFactory {
@@ -45,6 +46,7 @@ public class ConfigFactory {
     private Map<String, Object> buildConfig(final String channelName) {
         final Map<String, Object> config = new HashMap<>();
         config.put("topic", this.bootstrapConfig.extraOutputTopics().getOrDefault(channelName, channelName));
+        config.put("key.serializer", IntegerSerializer.class);
         config.put("value.serializer", io.confluent.kafka.serializers.KafkaAvroSerializer.class);
         return config;
     }

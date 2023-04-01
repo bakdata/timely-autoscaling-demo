@@ -36,8 +36,8 @@ public class SampleProducer implements KafkaProducer {
                 .onItem()
                 .transformToUni(this.emitter::send)
                 .merge()
-                .onSubscription().invoke(() -> log.info("Starting to produce user-profiles"))
-                .onTermination().invoke(() -> log.info("Finished producing user-profiles"));
+                .onSubscription().invoke(() -> log.info("Starting to produce samples"))
+                .onTermination().invoke(() -> log.info("Finished producing samples"));
     }
 
     @Override

@@ -1,6 +1,7 @@
 package com.bakdata.ks23.common;
 
 
+import com.bakdata.ks23.common.BootstrapConfig.BootstrapStreamsConfig;
 import io.smallrye.common.annotation.Identifier;
 import io.smallrye.config.SmallRyeConfig;
 import java.util.HashMap;
@@ -46,6 +47,13 @@ public class KafkaBootstrapProducer {
         properties.put(CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG, this.bootstrapConfig.brokers());
         properties.put("schema.registry.url", this.bootstrapConfig.schemaRegistryUrl());
         properties.putAll(this.bootstrapConfig.streamsConfig());
+
+        if (this.bootstrapConfig.streams().isPresent()) {
+            final BootstrapStreamsConfig bootstrapStreamsConfig = this.bootstrapConfig.streams().get();
+            properties.put("app.id",
+                    bootstrapStreamsConfig.id() + String.join("-", this.bootstrapConfig.allOutputTopics()));
+        }
+
         return properties;
     }
 

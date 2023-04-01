@@ -12,7 +12,7 @@ public class BootstrapMapConverter implements Converter<Map<String, String>> {
 
     @Override
     public Map<String, String> convert(final String value) {
-        if (value.isBlank()) {
+        if (value == null || value.isBlank()) {
             return Collections.emptyMap();
         }
         return Arrays.stream(value.split(","))
