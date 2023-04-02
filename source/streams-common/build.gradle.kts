@@ -18,11 +18,17 @@ dependencies {
     implementation(enforcedPlatform(libs.quarkus.platform))
     implementation(libs.quarkus.arc)
     implementation(libs.quarkus.avro)
+    implementation(libs.quarkus.kafkaStreams)
+    implementation(libs.quarkus.kafka.registry)
+    implementation((project(":kafka-common")))
+    implementation(libs.confluent.avro.serde) {
+        exclude(group = "jakarta.ws.rs", module = "jakarta.ws.rs-api")
+    }
     implementation(libs.streamsBootstrap) {
         exclude(group = "org.apache.logging.log4j")
     }
 }
 
-tasks.getByName<Test>("test") {
+tasks.test {
     useJUnitPlatform()
 }

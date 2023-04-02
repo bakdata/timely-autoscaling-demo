@@ -5,10 +5,11 @@ import java.time.Duration;
 import java.util.Properties;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import org.apache.kafka.clients.CommonClientConfigs;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.admin.AdminClientConfig;
 
 @ApplicationScoped
+@Slf4j
 public class AdminClientProvider {
 
     public static final Duration ADMIN_TIMEOUT = Duration.ofSeconds(10L);
@@ -22,8 +23,10 @@ public class AdminClientProvider {
 
     public ImprovedAdminClient newAdminClient() {
         final Properties properties = new Properties();
-        properties.put(CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG, this.bootstrapConfig.brokers());
+        properties.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, this.bootstrapConfig.brokers());
         properties.put(AdminClientConfig.RECONNECT_BACKOFF_MAX_MS_CONFIG, "10000");
+        log.info("Create admin client with properties: {}", properties);
+
         return ImprovedAdminClient.builder()
                 .properties(properties)
                 .schemaRegistryUrl(this.bootstrapConfig.schemaRegistryUrl())

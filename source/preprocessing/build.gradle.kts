@@ -20,12 +20,12 @@ dependencies {
     implementation(libs.quarkus.arc)
     implementation(libs.quarkus.kafkaStreams)
     implementation(libs.quarkus.kafka.registry)
-    implementation((project(":kafka-common")))
+    implementation(libs.errorHandling)
+    implementation(project(":kafka-common"))
+    implementation(project(":streams-common"))
     implementation(libs.confluent.avro.serde) {
         exclude(group = "jakarta.ws.rs", module = "jakarta.ws.rs-api")
     }
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.8.1")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.8.1")
 }
 
 tasks.getByName<Test>("test") {

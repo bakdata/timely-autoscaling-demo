@@ -40,8 +40,6 @@ public class ProducerApplication implements QuarkusApplication {
         return 0;
     }
 
-
-
 }
 
 

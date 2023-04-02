@@ -9,3 +9,4 @@ include(
         "streams",
         "preprocessing"
 )
+include("streams-common")

@@ -40,7 +40,7 @@ public class ZipCsvReader<T extends GenericRecord> {
             final InputStream inputStream = zipFile.getInputStream(entry);
             final BufferedReader bufferedInputStream = new BufferedReader(new InputStreamReader(inputStream));
             return bufferedInputStream.lines()
-                    .skip(1) // skip heaeder
+                    .skip(1) // skip header
                     .map(this::convert);
         } catch (final IOException e) {
             throw new UncheckedIOException(e);

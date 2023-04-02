@@ -51,9 +51,6 @@ public class JoiningProcessor implements FixedKeyProcessor<byte[], Sample, FullS
         this.context.forward(record.withValue(build));
     }
 
-
-
-
     @Override
     public void close() {
         FixedKeyProcessor.super.close();

@@ -1,11 +1,15 @@
 package com.bakdata.ks23.preprocessing;
 
+import com.bakdata.kafka.AvroDeadLetterConverter;
+import com.bakdata.kafka.DeadLetter;
+import com.bakdata.kafka.ErrorCapturingValueProcessor;
+import com.bakdata.kafka.ProcessedValue;
 import com.bakdata.ks23.AdFeature;
 import com.bakdata.ks23.FullSample;
 import com.bakdata.ks23.Sample;
 import com.bakdata.ks23.UserProfile;
 import com.bakdata.ks23.common.BootstrapConfig;
-import com.bakdata.ks23.common.BootstrapConfig.BootstrapStreamsConfig;
+import com.bakdata.ks23.streams.common.BootstrapStreamsConfig;
 import io.confluent.kafka.serializers.AbstractKafkaSchemaSerDeConfig;
 import io.confluent.kafka.streams.serdes.avro.SpecificAvroSerde;
 import java.util.HashMap;
@@ -20,6 +24,7 @@ import org.apache.kafka.common.utils.Bytes;
 import org.apache.kafka.streams.StreamsBuilder;
 import org.apache.kafka.streams.Topology;
 import org.apache.kafka.streams.kstream.Consumed;
+import org.apache.kafka.streams.kstream.KStream;
 import org.apache.kafka.streams.kstream.Materialized;
 import org.apache.kafka.streams.kstream.Materialized.StoreType;
 import org.apache.kafka.streams.kstream.Named;
@@ -39,9 +44,9 @@ public class PreprocessingTopology {
     private final BootstrapStreamsConfig streamsConfig;
 
     @Inject
-    public PreprocessingTopology(final BootstrapConfig bootstrapConfig) {
+    public PreprocessingTopology(final BootstrapConfig bootstrapConfig, final BootstrapStreamsConfig streamsConfig) {
         this.bootstrapConfig = bootstrapConfig;
-        this.streamsConfig = bootstrapConfig.streams().orElseThrow();
+        this.streamsConfig = streamsConfig;
     }
 
     @Produces
@@ -53,6 +58,7 @@ public class PreprocessingTopology {
         final Serde<AdFeature> adFeatureSerde = this.createSerde();
         final Serde<Sample> sampleSerde = this.createSerde();
         final Serde<FullSample> fullSampleSerde = this.createSerde();
+        final Serde<DeadLetter> deadLetterSerde = this.createSerde();
 
         streamsBuilder.globalTable(
                 this.streamsConfig.extraInputTopics().get(AD_FEATURE),
@@ -70,13 +76,30 @@ public class PreprocessingTopology {
                         .withStoreType(StoreType.IN_MEMORY) // ~30MB
         );
 
-        streamsBuilder.stream(
+        final KStream<byte[], ProcessedValue<Sample, FullSample>> processedWithError = streamsBuilder.stream(
                         this.streamsConfig.extraInputTopics().get(SAMPLE),
                         Consumed.with(Serdes.ByteArray(), sampleSerde).withName("sample_input_topic")
                 )
                 .processValues(
-                        JoiningProcessor::new,
+                        ErrorCapturingValueProcessor.captureErrors(JoiningProcessor::new),
                         Named.as("sample_join_processor")
+                );
+
+        processedWithError.flatMapValues(
+                        ProcessedValue::getErrors,
+                        Named.as("join-error-extractor")
+                )
+                .processValues(
+                        AvroDeadLetterConverter.asProcessor("Could not create full sample"),
+                        Named.as("join-dead-letter-converter"))
+                .to(
+                        this.streamsConfig.errorTopic(),
+                        Produced.with(Serdes.ByteArray(), deadLetterSerde).withName("error_output_topic")
+                );
+
+        processedWithError.flatMapValues(
+                        ProcessedValue::getValues,
+                        Named.as("join-value-extractor")
                 )
                 .to(
                         this.bootstrapConfig.outputTopic().orElseThrow(),
@@ -85,7 +108,6 @@ public class PreprocessingTopology {
 
         return streamsBuilder.build();
     }
-
 
     private <T extends SpecificRecord> SpecificAvroSerde<T> createSerde() {
         final SpecificAvroSerde<T> avroSerde = new SpecificAvroSerde<>();
