@@ -1,0 +1,23 @@
+{
+  "namespace": "com.bakdata.ks23",
+  "type": "record",
+  "name": "PredictionSample",
+  "fields": [
+    {
+      "name": "userId",
+      "type": "int"
+    },
+    {
+      "name": "userScore",
+      "type": "double"
+    },
+    {
+      "name": "adgroupId",
+      "type": "int"
+    },
+    {
+      "name": "adScore",
+      "type": "double"
+    }
+  ]
+}

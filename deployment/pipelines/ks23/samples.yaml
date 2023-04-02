@@ -54,3 +54,48 @@
       ${pipeline_name}-preprocessor-error:
         type: error
         partitions_count: 4
+- type: rest-service
+  name: user-api
+  app:
+    image:
+      repository: ks23-registry:5000/ks23/ks23-rest-service
+      pullPolicy: Always
+      tag: 1.0-SNAPSHOT
+- type: rest-service
+  name: ad-api
+  app:
+    image:
+      repository: ks23-registry:5000/ks23/ks23-rest-service
+      pullPolicy: Always
+      tag: 1.0-SNAPSHOT
+- type: streams-app
+  name: integrator
+  app:
+    replicaCount: 1
+    image: ks23-registry:5000/ks23/ks23-integrator
+    imageTag: 1.0-SNAPSHOT
+    commandLine:
+      ID: integrator
+      INTEGRATOR_CACHE_ENABLED: "false"
+      INTEGRATOR_CACHE_TYPE: MEMORY
+      INTEGRATOR_USER_URL: http://user-api-rest-service
+      INTEGRATOR_AD_URL: http://ad-api-rest-service
+    resources:
+      limits:
+        cpu: 2
+        memory: 600Mi
+      requests:
+        cpu: 500m
+        memory: 600Mi
+  from:
+    topics:
+      ${pipeline_name}-full-sample:
+        type: input
+  to:
+    topics:
+      ${pipeline_name}-sample-prediction:
+        type: output
+        partitions_count: 5
+      ${pipeline_name}-integrator-error:
+        type: error
+        partitions_count: 4

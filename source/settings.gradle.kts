@@ -1,12 +1,11 @@
 rootProject.name = "ks23"
 
 include(
-        "user-api",
-        "ad-api",
+        "rest-service",
         "kafka-common",
+        "integrator",
         "metrics-service",
         "producer",
-        "streams",
-        "preprocessing"
+        "preprocessing",
+        "streams-common"
 )
-include("streams-common")

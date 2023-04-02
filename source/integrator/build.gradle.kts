@@ -1,4 +1,3 @@
-@Suppress("DSL_SCOPE_VIOLATION")
 plugins {
     id("java")
     alias(libs.plugins.quarkus)
@@ -17,15 +16,17 @@ dependencies {
     implementation(enforcedPlatform(libs.quarkus.platform))
     implementation(libs.quarkus.jib)
     implementation(libs.quarkus.arc)
-    implementation(libs.quarkus.resteasy.client)
+    implementation(libs.quarkus.resteasy.client.jackson)
     implementation(libs.quarkus.resteasy.reactive.jackson)
-    implementation(libs.quarkus.kafka)
+    implementation(libs.quarkus.kafkaStreams)
     implementation(libs.quarkus.kafka.registry)
-    implementation(libs.confluent.avro.serializer) {
+    implementation(libs.errorHandling)
+    implementation(project(":kafka-common"))
+    implementation(project(":streams-common"))
+    implementation(libs.confluent.avro.serde) {
         exclude(group = "jakarta.ws.rs", module = "jakarta.ws.rs-api")
     }
-    implementation((project(":kafka-common")))
-    testImplementation(libs.quarkus.junit)
+
 }
 
 tasks.getByName<Test>("test") {

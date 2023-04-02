@@ -5,12 +5,14 @@ confluent = "7.3.2"
 [libraries]
 quarkus_platform = { group = "io.quarkus.platform", name = "quarkus-bom", version.ref = "quarkus" }
 quarkus_arc = { group = "io.quarkus", name = "quarkus-arc" }
-quarkus_reasteasy_reactive = { group = "io.quarkus", name = "quarkus-resteasy-reactive" }
+quarkus_resteasy_reactive = { group = "io.quarkus", name = "quarkus-resteasy-reactive" }
 quarkus_resteasy_client = { group = "io.quarkus", name = "quarkus-rest-client-reactive" }
-quarkus_reasteasy_reactive_jackson = { group = "io.quarkus", name = "quarkus-resteasy-reactive-jackson" }
+quarkus_resteasy_client_jackson = { group = "io.quarkus", name = "quarkus-rest-client-reactive-jackson" }
+quarkus_resteasy_reactive_jackson = { group = "io.quarkus", name = "quarkus-resteasy-reactive-jackson" }
 quarkus_kafka = { group = "io.quarkus", name = "quarkus-smallrye-reactive-messaging-kafka" }
 quarkus_kafkaStreams = { group = "io.quarkus", name = "quarkus-kafka-streams" }
 quarkus_kafka_registry = { group = "io.quarkus", name = "quarkus-confluent-registry-avro" }
+quarkus_health = { group = "io.quarkus", name = "quarkus-smallrye-health" }
 quarkus_avro = { group = "io.quarkus", name = "quarkus-avro" }
 quarkus_junit = { group = "io.quarkus", name = "quarkus-junit5" }
 quarkus_junit_mockito = { group = "io.quarkus", name = "quarkus-junit5-mockito" }
@@ -19,7 +21,6 @@ confluent_avro_serializer = { group = "io.confluent", name = "kafka-avro-seriali
 confluent_avro_serde = { group = "io.confluent", name = "kafka-streams-avro-serde", version.ref = "confluent" }
 streamsBootstrap = { group = "com.bakdata.kafka", name = "streams-bootstrap", version = "2.9.0" }
 errorHandling = { group = "com.bakdata.kafka", name = "error-handling-avro", version = "1.4.1"}
-
 
 [plugins]
 quarkus = { id = "io.quarkus", version.ref = "quarkus" }
