@@ -1,4 +1,4 @@
-package com.bakdata.ks23.integrator;
+package com.bakdata.ks23.integrator.client;
 
 import io.smallrye.mutiny.Uni;
 import javax.ws.rs.POST;
@@ -7,9 +7,8 @@ import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
 
 @RegisterRestClient
 @Path("predictions")
-public interface UserClient {
+public interface AdClient {
     @POST
-    @Path("users")
-    Uni<Prediction> newUserPrediction();
-
+    @Path("ads")
+    Uni<Prediction> newAdPrediction();
 }

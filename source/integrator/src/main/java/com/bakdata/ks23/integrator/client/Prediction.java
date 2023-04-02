@@ -1,4 +1,4 @@
-package com.bakdata.ks23.integrator;
+package com.bakdata.ks23.integrator.client;
 
 
 import lombok.Value;
