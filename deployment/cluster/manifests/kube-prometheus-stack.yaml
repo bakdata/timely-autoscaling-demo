@@ -23,7 +23,7 @@ prometheus:
             - strimzi
     serviceMonitorSelector:
       matchExpressions:
-        - { key: release, operator: In, values: [ kube-prometheus, strimzi-kafka ] }
+        - { key: release, operator: In, values: [ kube-prometheus-stack, strimzi-kafka ] }
     podMonitorSelector:
       matchExpressions:
-        - { key: release, operator: In, values: [ kube-prometheus, strimzi-kafka ] }
+        - { key: release, operator: In, values: [ kube-prometheus-stack, strimzi-kafka ] }
