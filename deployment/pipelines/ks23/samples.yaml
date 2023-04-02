@@ -61,6 +61,10 @@
       repository: ks23-registry:5000/ks23/ks23-rest-service
       pullPolicy: Always
       tag: 1.0-SNAPSHOT
+    app:
+      config: |
+        ks23.rest.timeout-millis.mean=550
+        ks23.rest.timeout-millis.std-dev=50
 - type: rest-service
   name: ad-api
   app:
@@ -68,6 +72,10 @@
       repository: ks23-registry:5000/ks23/ks23-rest-service
       pullPolicy: Always
       tag: 1.0-SNAPSHOT
+    app:
+      config: |
+        ks23.rest.timeout-millis.mean=550
+        ks23.rest.timeout-millis.std-dev=50
 - type: streams-app
   name: integrator
   app:
@@ -87,6 +95,15 @@
       requests:
         cpu: 500m
         memory: 600Mi
+    autoscaling:
+      consumerGroup: integrator
+      lagThreshold: 5 # Average target value to trigger scaling actions.
+      enabled: true
+      pollingInterval: 30
+      cooldownPeriod: 300
+      offsetResetPolicy: earliest
+      maxReplicas: 5
+      minReplicas: 0
   from:
     topics:
       ${pipeline_name}-full-sample:

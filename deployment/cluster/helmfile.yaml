@@ -7,6 +7,8 @@ repositories:
     url: https://confluentinc.github.io/cp-helm-charts/
   - name: redpanda
     url: https://charts.redpanda.com/
+  - name: kedacore
+    url: https://kedacore.github.io/charts
 
 
 helmDefaults:
@@ -31,6 +33,15 @@ releases:
       - "./manifests/kube-prometheus-stack.yaml"
     needs:
       - default/namespaces
+
+  - name: keda
+    namespace: keda
+    chart: kedacore/keda
+    values:
+      - "./manifests/keda.yaml"
+    needs:
+      # Because of Pod/ServiceMonitors
+      - monitoring/kube-prometheus-stack
 
   - name: strimzi
     namespace: strimzi

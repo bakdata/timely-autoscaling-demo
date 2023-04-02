@@ -1,0 +1,10 @@
+watchNamespaces:
+  - "pipeline"
+
+resources:
+  limits:
+    cpu: 2
+    memory: 1G
+  requests:
+    cpu: 100m
+    memory: 250Mi
