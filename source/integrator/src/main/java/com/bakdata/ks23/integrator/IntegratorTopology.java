@@ -14,12 +14,12 @@ import io.confluent.kafka.streams.serdes.avro.SpecificAvroSerde;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.Executors;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLSession;
+import javax.ws.rs.ProcessingException;
 import org.apache.avro.specific.SpecificRecord;
 import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.common.serialization.Serdes;
@@ -67,7 +67,11 @@ public class IntegratorTopology {
                         Consumed.with(Serdes.ByteArray(), fullSampleSerde).withName("full_sample_input_topic")
                 )
                 .processValues(
-                        captureErrors(() -> new PredictionProcessor(this.userClient, this.adClient)),
+                        captureErrors(
+                                () -> new PredictionProcessor(this.userClient, this.adClient),
+                                // Stop processing if a rest api isn't reachable
+                                exception -> exception instanceof ProcessingException
+                        ),
                         Named.as("predictor_processor")
                 );
 
