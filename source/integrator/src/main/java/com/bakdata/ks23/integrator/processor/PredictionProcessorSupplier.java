@@ -11,9 +11,9 @@ import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.processor.api.FixedKeyProcessor;
 import org.apache.kafka.streams.processor.api.FixedKeyProcessorSupplier;
 import org.apache.kafka.streams.state.KeyValueBytesStoreSupplier;
-import org.apache.kafka.streams.state.KeyValueStore;
 import org.apache.kafka.streams.state.StoreBuilder;
 import org.apache.kafka.streams.state.Stores;
+import org.apache.kafka.streams.state.TimestampedKeyValueStore;
 
 @ApplicationScoped
 class PredictionProcessorSupplier implements FixedKeyProcessorSupplier<byte[], FullSample, PredictionSample> {
@@ -24,14 +24,12 @@ class PredictionProcessorSupplier implements FixedKeyProcessorSupplier<byte[], F
     private final UserClient userClient;
     private final AdClient adClient;
     private final IntegratorConfig integratorConfig;
-    private final CacheMetric cacheMetric;
 
     PredictionProcessorSupplier(final UserClient userClient, final AdClient adClient,
-            final IntegratorConfig integratorConfig, final CacheMetric cacheMetric) {
+            final IntegratorConfig integratorConfig) {
         this.userClient = userClient;
         this.adClient = adClient;
         this.integratorConfig = integratorConfig;
-        this.cacheMetric = cacheMetric;
     }
 
     @Override
@@ -39,8 +37,7 @@ class PredictionProcessorSupplier implements FixedKeyProcessorSupplier<byte[], F
         return new PredictionProcessor(
                 this.userClient,
                 this.adClient,
-                this.integratorConfig.cache().enabled(),
-                this.cacheMetric
+                this.integratorConfig.cache().enabled()
         );
     }
 
@@ -53,13 +50,13 @@ class PredictionProcessorSupplier implements FixedKeyProcessorSupplier<byte[], F
         }
     }
 
-    private StoreBuilder<KeyValueStore<Integer, Double>> newPredictionStore(final String storeName) {
+    private StoreBuilder<TimestampedKeyValueStore<Integer, Double>> newPredictionStore(final String storeName) {
         final KeyValueBytesStoreSupplier storeSupplier;
         if (this.integratorConfig.cache().type() == CacheType.MEMORY) {
             storeSupplier = Stores.inMemoryKeyValueStore(storeName);
         } else {
             storeSupplier = Stores.persistentKeyValueStore(storeName);
         }
-        return Stores.keyValueStoreBuilder(storeSupplier, Serdes.Integer(), Serdes.Double());
+        return Stores.timestampedKeyValueStoreBuilder(storeSupplier, Serdes.Integer(), Serdes.Double());
     }
 }
