@@ -1,7 +1,8 @@
-package com.bakdata.ks23.integrator;
+package com.bakdata.ks23.integrator.processor;
 
 import com.bakdata.ks23.FullSample;
 import com.bakdata.ks23.PredictionSample;
+import com.bakdata.ks23.integrator.IntegratorConfig;
 import com.bakdata.ks23.integrator.IntegratorConfig.Cache.CacheType;
 import com.bakdata.ks23.integrator.client.AdClient;
 import com.bakdata.ks23.integrator.client.UserClient;
@@ -16,7 +17,7 @@ import org.apache.kafka.streams.state.Stores;
 import org.apache.kafka.streams.state.TimestampedKeyValueStore;
 
 @ApplicationScoped
-class PredictionProcessorSupplier implements FixedKeyProcessorSupplier<byte[], FullSample, PredictionSample> {
+public class PredictionProcessorSupplier implements FixedKeyProcessorSupplier<byte[], FullSample, PredictionSample> {
 
     public static final String USER_STATE_STORE = "cacheStateStoreUser";
     public static final String AD_STATE_STORE = "cacheStateStoreAd";
@@ -37,7 +38,8 @@ class PredictionProcessorSupplier implements FixedKeyProcessorSupplier<byte[], F
         return new PredictionProcessor(
                 this.userClient,
                 this.adClient,
-                this.integratorConfig.cache().enabled()
+                this.integratorConfig.cache().enabled(),
+                this.integratorConfig.cache().retention()
         );
     }
 

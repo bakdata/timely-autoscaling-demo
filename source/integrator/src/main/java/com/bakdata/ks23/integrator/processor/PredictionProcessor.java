@@ -1,7 +1,7 @@
-package com.bakdata.ks23.integrator;
+package com.bakdata.ks23.integrator.processor;
 
-import static com.bakdata.ks23.integrator.PredictionProcessorSupplier.AD_STATE_STORE;
-import static com.bakdata.ks23.integrator.PredictionProcessorSupplier.USER_STATE_STORE;
+import static com.bakdata.ks23.integrator.processor.PredictionProcessorSupplier.AD_STATE_STORE;
+import static com.bakdata.ks23.integrator.processor.PredictionProcessorSupplier.USER_STATE_STORE;
 
 import com.bakdata.ks23.FullSample;
 import com.bakdata.ks23.PredictionSample;
@@ -14,27 +14,27 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.streams.processor.api.FixedKeyProcessor;
 import org.apache.kafka.streams.processor.api.FixedKeyProcessorContext;
 import org.apache.kafka.streams.processor.api.FixedKeyRecord;
-import org.apache.kafka.streams.state.TimestampedKeyValueStore;
 
 @Slf4j
 public class PredictionProcessor implements FixedKeyProcessor<byte[], FullSample, PredictionSample> {
     private static final Duration CLIENT_TIMEOUT = Duration.ofSeconds(5);
-    private static final long CACHE_RETENTION_TIME = Duration.ofSeconds(10).toMillis();
-    private FixedKeyProcessorContext<byte[], PredictionSample> context;
-
 
     private final UserClient userClient;
     private final AdClient adClient;
     private final boolean useCache;
+    private final Duration cacheRetentionTime;
+
+    private FixedKeyProcessorContext<byte[], PredictionSample> context;
     private PredictionProvider userPredictionProvider;
     private PredictionProvider adPredictionProvider;
 
-    public PredictionProcessor(final UserClient userClient, final AdClient adClient, final boolean useCache) {
+    public PredictionProcessor(final UserClient userClient, final AdClient adClient, final boolean useCache,
+            final Duration cacheRetentionTime) {
         this.userClient = userClient;
         this.adClient = adClient;
         this.useCache = useCache;
+        this.cacheRetentionTime = cacheRetentionTime;
     }
-
 
     @Override
     public void init(final FixedKeyProcessorContext<byte[], PredictionSample> context) {
@@ -45,12 +45,17 @@ public class PredictionProcessor implements FixedKeyProcessor<byte[], FullSample
                 id -> this.adClient.newAdPrediction().map(Prediction::getScore);
 
         if (this.useCache) {
-            log.info("Use cache");
-            final TimestampedKeyValueStore<Integer, Double> userStore = context.getStateStore(AD_STATE_STORE);
-            final TimestampedKeyValueStore<Integer, Double> adStore = context.getStateStore(USER_STATE_STORE);
-            this.userPredictionProvider =
-                    new CachedPredictionProvider(remoteUserProvider, userStore, CACHE_RETENTION_TIME);
-            this.adPredictionProvider = new CachedPredictionProvider(remoteAdProvider, adStore, CACHE_RETENTION_TIME);
+            log.info("Use cached prediction provider with a retention time of {}", this.cacheRetentionTime);
+            this.userPredictionProvider = new CachedPredictionProvider(
+                    remoteUserProvider,
+                    context.getStateStore(USER_STATE_STORE),
+                    this.cacheRetentionTime
+            );
+            this.adPredictionProvider = new CachedPredictionProvider(
+                    remoteAdProvider,
+                    context.getStateStore(AD_STATE_STORE),
+                    this.cacheRetentionTime
+            );
         } else {
             this.userPredictionProvider = remoteUserProvider;
             this.adPredictionProvider = remoteAdProvider;
@@ -77,7 +82,6 @@ public class PredictionProcessor implements FixedKeyProcessor<byte[], FullSample
                 .atMost(CLIENT_TIMEOUT);
         this.context.forward(record.withValue(predictionSample));
     }
-
 
     @Override
     public void close() {

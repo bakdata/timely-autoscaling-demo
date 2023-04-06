@@ -7,6 +7,7 @@ import com.bakdata.kafka.ProcessedValue;
 import com.bakdata.ks23.FullSample;
 import com.bakdata.ks23.PredictionSample;
 import com.bakdata.ks23.common.BootstrapConfig;
+import com.bakdata.ks23.integrator.processor.PredictionProcessorSupplier;
 import com.bakdata.ks23.streams.common.BootstrapStreamsConfig;
 import io.confluent.kafka.serializers.AbstractKafkaSchemaSerDeConfig;
 import io.confluent.kafka.streams.serdes.avro.SpecificAvroSerde;
@@ -49,7 +50,8 @@ public class IntegratorTopology {
         final Serde<DeadLetter> deadLetterSerde = this.createSerde();
 
         final KStream<byte[], ProcessedValue<FullSample, PredictionSample>> processedWithError = streamsBuilder.stream(
-                        this.streamsConfig.inputTopics().orElseThrow().get(0),
+                        this.streamsConfig.inputTopics()
+                                .orElseThrow(() -> new IllegalArgumentException("Input topics must be set")),
                         Consumed.with(Serdes.ByteArray(), fullSampleSerde).withName("full_sample_input_topic")
                 )
                 .processValues(
@@ -67,7 +69,8 @@ public class IntegratorTopology {
                 )
                 .processValues(
                         AvroDeadLetterConverter.asProcessor("Could not create full sample"),
-                        Named.as("predictor-dead-letter-converter"))
+                        Named.as("predictor-dead-letter-converter")
+                )
                 .to(
                         this.streamsConfig.errorTopic(),
                         Produced.with(Serdes.ByteArray(), deadLetterSerde).withName("error_output_topic")
