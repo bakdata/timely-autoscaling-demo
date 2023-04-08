@@ -25,6 +25,7 @@ public class PredictionResource {
     public PredictionResource(final PredictionConfig config) {
         this.config = config;
         this.random = new Random();
+
     }
 
     @POST
@@ -32,7 +33,6 @@ public class PredictionResource {
     public Uni<Prediction> newUserPrediction() {
         return this.newPrediction("user");
     }
-
 
     @POST
     @Path("ads")
@@ -53,8 +53,22 @@ public class PredictionResource {
     }
 
     private Uni<?> simulateWork() {
-        final long delay = Math.abs((long) this.drawFromDistribution(this.config.timeoutMillis()));
-        return Uni.createFrom().nullItem().onItem().delayIt().by(Duration.ofMillis(delay));
+        final long delay = Math.abs((long) this.drawFromDistribution(this.config.latencyMillis()));
+        return Uni.createFrom().nullItem()
+                // Block on default executor to simulate CPU utilization
+                .onItem().invoke(this::block)
+                // Delay for latency that allows concurrent
+                .onItem().delayIt().by(Duration.ofMillis(delay));
+    }
+
+
+    private void block() {
+        final long delay = Math.abs((long) this.drawFromDistribution(this.config.blockingMillis()));
+        try {
+            Thread.sleep(delay);
+        } catch (final InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private double drawFromDistribution(final Distribution distribution) {

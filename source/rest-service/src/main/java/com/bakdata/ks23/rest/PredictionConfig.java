@@ -7,7 +7,9 @@ public interface PredictionConfig {
 
     Distribution prediction();
 
-    Distribution timeoutMillis();
+    Distribution latencyMillis();
+
+    Distribution blockingMillis();
 
 
     interface Distribution {

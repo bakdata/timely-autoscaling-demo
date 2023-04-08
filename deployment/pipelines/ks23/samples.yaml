@@ -6,7 +6,7 @@
     imageTag: 1.0-SNAPSHOT
     deployment: true
     commandLine:
-      KS23_PRODUCER_SAMPLE_ENABLED: true
+      KS23_PRODUCER_SAMPLE_ENABLED: "true"
     resources:
       limits:
         cpu: 2
@@ -63,8 +63,10 @@
       tag: 1.0-SNAPSHOT
     app:
       config: |
-        ks23.rest.timeout-millis.mean=550
-        ks23.rest.timeout-millis.std-dev=50
+        ks23.rest.latency-millis.mean=200
+        ks23.rest.latency-millis.std-dev=40
+        ks23.rest.blocking-millis.mean=50
+        ks23.rest.blocking-millis.std-dev=10
 - type: rest-service
   name: ad-api
   app:
@@ -74,8 +76,10 @@
       tag: 1.0-SNAPSHOT
     app:
       config: |
-        ks23.rest.timeout-millis.mean=550
-        ks23.rest.timeout-millis.std-dev=50
+        ks23.rest.latency-millis.mean=250
+        ks23.rest.latency-millis.std-dev=50
+        ks23.rest.blocking-millis.mean=500
+        ks23.rest.blocking-millis.std-dev=50
 - type: streams-app
   name: integrator
   app:
