@@ -20,6 +20,22 @@
         type: extra
         role: sample
         partitions_count: 5
+- type: rest-service
+  name: metrics-service
+  app:
+    image:
+      repository: ks23-registry:5000/ks23/ks23-metrics-service
+      pullPolicy: Always
+      tag: 1.0-SNAPSHOT
+    app:
+      config: |
+        app.brokers=cluster-kafka-bootstrap.kafka:9092
+        app.schema-registry-url=http://k8kafka-cp-schema-registry.kafka:8081
+        ks23.metrics.ads-cache-retention=PT50M
+        ks23.metrics.user-cache-retention=PT50M
+        ks23.metrics.sample-topic=${pipeline_name}-sample
+        ks23.metrics.window-size=PT2M30S
+        mp.messaging.incoming.samples.group.id=metrics-service
 - type: streams-app
   name: sample-preprocessor
   app:
@@ -88,8 +104,9 @@
     imageTag: 1.0-SNAPSHOT
     commandLine:
       ID: integrator
-      INTEGRATOR_CACHE_ENABLED: "false"
+      INTEGRATOR_CACHE_ENABLED: "true"
       INTEGRATOR_CACHE_TYPE: MEMORY
+      INTEGRATOR_CACHE_RETENTION: "PT50M"
       INTEGRATOR_USER_URL: http://user-api-rest-service
       INTEGRATOR_AD_URL: http://ad-api-rest-service
     resources:
@@ -102,7 +119,7 @@
     autoscaling:
       consumerGroup: integrator
       lagThreshold: 5 # Average target value to trigger scaling actions.
-      enabled: true
+      enabled: false
       pollingInterval: 30
       cooldownPeriod: 300
       offsetResetPolicy: earliest

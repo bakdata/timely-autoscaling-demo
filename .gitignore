@@ -18,3 +18,4 @@ source/producer/src/main/jib/data.zip
 docs/diagram
 __pycache__
 *.venv
+*.xopp
