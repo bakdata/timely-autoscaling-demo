@@ -45,6 +45,8 @@
     imageTag: 1.0-SNAPSHOT
     commandLine:
       ID: preprocessor
+      KS23_PREPROCESSING_MILLIS_TICKS: "250"
+      KS23_PREPROCESSING_DELAY: "PT1M30S"
     resources:
       limits:
         cpu: 2
@@ -80,19 +82,19 @@
       tag: 1.0-SNAPSHOT
     app:
       config: |
-        ks23.rest.blocking-millis.mean=50
+        ks23.rest.blocking-millis.mean=500
         ks23.rest.blocking-millis.std-dev=10
 
     autoscaling:
       minReplicas: 1
       maxReplicas: 5
       keda:
-        enabled: true
+        enabled: false
         idleReplicaCount: 0
         triggers:
           - type: metrics-api
             metadata:
-              targetValue: "20.0" # A single replica has ~20 RPS
+              targetValue: "2" # A single replica has ~2 RPS
               url: "http://metrics-service/metrics/latest"
               valueLocation: "uniqueElements.users"
 
@@ -105,19 +107,19 @@
       tag: 1.0-SNAPSHOT
     app:
       config: |
-        ks23.rest.blocking-millis.mean=500
+        ks23.rest.blocking-millis.mean=750
         ks23.rest.blocking-millis.std-dev=10
 
     autoscaling:
       minReplicas: 1
       maxReplicas: 5
       keda:
-        enabled: true
+        enabled: false
         idleReplicaCount: 0
         triggers:
           - type: metrics-api
             metadata:
-              targetValue: "2.0" # A single replica has 2 RPS
+              targetValue: "1.5" # A single replica has ~1.5 RPS
               url: "http://metrics-service/metrics/latest"
               valueLocation: "uniqueElements.ads"
 

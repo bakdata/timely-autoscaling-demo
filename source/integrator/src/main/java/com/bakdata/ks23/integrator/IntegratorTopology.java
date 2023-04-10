@@ -9,15 +9,11 @@ import com.bakdata.ks23.PredictionSample;
 import com.bakdata.ks23.common.BootstrapConfig;
 import com.bakdata.ks23.integrator.processor.PredictionProcessorSupplier;
 import com.bakdata.ks23.streams.common.BootstrapStreamsConfig;
-import io.confluent.kafka.serializers.AbstractKafkaSchemaSerDeConfig;
-import io.confluent.kafka.streams.serdes.avro.SpecificAvroSerde;
-import java.util.HashMap;
-import java.util.Map;
+import com.bakdata.ks23.streams.common.SerdeProvider;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 import javax.ws.rs.ProcessingException;
-import org.apache.avro.specific.SpecificRecord;
 import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.StreamsBuilder;
@@ -33,21 +29,23 @@ public class IntegratorTopology {
     private final BootstrapConfig bootstrapConfig;
     private final BootstrapStreamsConfig streamsConfig;
     private final PredictionProcessorSupplier processorSupplier;
+    private final SerdeProvider serdeProvider;
 
     @Inject
     public IntegratorTopology(final BootstrapConfig bootstrapConfig, final BootstrapStreamsConfig streamsConfig,
-            final PredictionProcessorSupplier processorSupplier) {
+            final PredictionProcessorSupplier processorSupplier, final SerdeProvider serdeProvider) {
         this.bootstrapConfig = bootstrapConfig;
         this.streamsConfig = streamsConfig;
         this.processorSupplier = processorSupplier;
+        this.serdeProvider = serdeProvider;
     }
 
     @Produces
     Topology integratorTopology() {
         final StreamsBuilder streamsBuilder = new StreamsBuilder();
-        final Serde<FullSample> fullSampleSerde = this.createSerde();
-        final Serde<PredictionSample> predictionSampleSerde = this.createSerde();
-        final Serde<DeadLetter> deadLetterSerde = this.createSerde();
+        final Serde<FullSample> fullSampleSerde = this.serdeProvider.avroSerde();
+        final Serde<PredictionSample> predictionSampleSerde = this.serdeProvider.avroSerde();
+        final Serde<DeadLetter> deadLetterSerde = this.serdeProvider.avroSerde();
 
         final KStream<byte[], ProcessedValue<FullSample, PredictionSample>> processedWithError = streamsBuilder.stream(
                         this.streamsConfig.inputTopics()
@@ -88,11 +86,4 @@ public class IntegratorTopology {
         return streamsBuilder.build();
     }
 
-    private <T extends SpecificRecord> SpecificAvroSerde<T> createSerde() {
-        final SpecificAvroSerde<T> avroSerde = new SpecificAvroSerde<>();
-        final Map<String, Object> config = new HashMap<>();
-        config.put(AbstractKafkaSchemaSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG, this.bootstrapConfig.schemaRegistryUrl());
-        avroSerde.configure(config, false);
-        return avroSerde;
-    }
 }

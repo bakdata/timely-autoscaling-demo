@@ -2,22 +2,18 @@ package com.bakdata.ks23.preprocessing;
 
 import com.bakdata.kafka.AvroDeadLetterConverter;
 import com.bakdata.kafka.DeadLetter;
-import com.bakdata.kafka.ErrorCapturingValueProcessor;
-import com.bakdata.kafka.ProcessedValue;
+import com.bakdata.kafka.ErrorCapturingProcessor;
+import com.bakdata.kafka.ProcessedKeyValue;
 import com.bakdata.ks23.AdFeature;
 import com.bakdata.ks23.FullSample;
 import com.bakdata.ks23.Sample;
 import com.bakdata.ks23.UserProfile;
 import com.bakdata.ks23.common.BootstrapConfig;
 import com.bakdata.ks23.streams.common.BootstrapStreamsConfig;
-import io.confluent.kafka.serializers.AbstractKafkaSchemaSerDeConfig;
-import io.confluent.kafka.streams.serdes.avro.SpecificAvroSerde;
-import java.util.HashMap;
-import java.util.Map;
+import com.bakdata.ks23.streams.common.SerdeProvider;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
-import org.apache.avro.specific.SpecificRecord;
 import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.common.utils.Bytes;
@@ -42,11 +38,17 @@ public class PreprocessingTopology {
 
     private final BootstrapConfig bootstrapConfig;
     private final BootstrapStreamsConfig streamsConfig;
+    private final SerdeProvider serdeProvider;
+    private final JoiningProcessorSupplier processorSupplier;
+
 
     @Inject
-    public PreprocessingTopology(final BootstrapConfig bootstrapConfig, final BootstrapStreamsConfig streamsConfig) {
+    public PreprocessingTopology(final BootstrapConfig bootstrapConfig, final BootstrapStreamsConfig streamsConfig,
+            final SerdeProvider serdeProvider, final JoiningProcessorSupplier processorSupplier) {
         this.bootstrapConfig = bootstrapConfig;
         this.streamsConfig = streamsConfig;
+        this.serdeProvider = serdeProvider;
+        this.processorSupplier = processorSupplier;
     }
 
     @Produces
@@ -54,11 +56,11 @@ public class PreprocessingTopology {
         final StreamsBuilder streamsBuilder = new StreamsBuilder();
 
         final Serde<Integer> keySerde = Serdes.Integer();
-        final Serde<UserProfile> profileSerde = this.createSerde();
-        final Serde<AdFeature> adFeatureSerde = this.createSerde();
-        final Serde<Sample> sampleSerde = this.createSerde();
-        final Serde<FullSample> fullSampleSerde = this.createSerde();
-        final Serde<DeadLetter> deadLetterSerde = this.createSerde();
+        final Serde<UserProfile> profileSerde = this.serdeProvider.avroSerde();
+        final Serde<AdFeature> adFeatureSerde = this.serdeProvider.avroSerde();
+        final Serde<Sample> sampleSerde = this.serdeProvider.avroSerde();
+        final Serde<FullSample> fullSampleSerde = this.serdeProvider.avroSerde();
+        final Serde<DeadLetter> deadLetterSerde = this.serdeProvider.avroSerde();
 
         streamsBuilder.globalTable(
                 this.streamsConfig.extraInputTopics().get(AD_FEATURE),
@@ -76,17 +78,17 @@ public class PreprocessingTopology {
                         .withStoreType(StoreType.IN_MEMORY) // ~30MB
         );
 
-        final KStream<byte[], ProcessedValue<Sample, FullSample>> processedWithError = streamsBuilder.stream(
+        final KStream<byte[], ProcessedKeyValue<byte[], Sample, FullSample>> processedWithError = streamsBuilder.stream(
                         this.streamsConfig.extraInputTopics().get(SAMPLE),
                         Consumed.with(Serdes.ByteArray(), sampleSerde).withName("sample_input_topic")
                 )
-                .processValues(
-                        ErrorCapturingValueProcessor.captureErrors(JoiningProcessor::new),
+                .process(
+                        ErrorCapturingProcessor.captureErrors(this.processorSupplier),
                         Named.as("sample_join_processor")
                 );
 
-        processedWithError.flatMapValues(
-                        ProcessedValue::getErrors,
+        processedWithError.flatMap(
+                        ProcessedKeyValue::getErrors,
                         Named.as("join-error-extractor")
                 )
                 .processValues(
@@ -98,7 +100,7 @@ public class PreprocessingTopology {
                 );
 
         processedWithError.flatMapValues(
-                        ProcessedValue::getValues,
+                        ProcessedKeyValue::getValues,
                         Named.as("join-value-extractor")
                 )
                 .to(
@@ -109,11 +111,4 @@ public class PreprocessingTopology {
         return streamsBuilder.build();
     }
 
-    private <T extends SpecificRecord> SpecificAvroSerde<T> createSerde() {
-        final SpecificAvroSerde<T> avroSerde = new SpecificAvroSerde<>();
-        final Map<String, Object> config = new HashMap<>();
-        config.put(AbstractKafkaSchemaSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG, this.bootstrapConfig.schemaRegistryUrl());
-        avroSerde.configure(config, false);
-        return avroSerde;
-    }
 }

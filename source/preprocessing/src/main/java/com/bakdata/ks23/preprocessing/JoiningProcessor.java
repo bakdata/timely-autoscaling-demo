@@ -4,29 +4,46 @@ import com.bakdata.ks23.AdFeature;
 import com.bakdata.ks23.FullSample;
 import com.bakdata.ks23.Sample;
 import com.bakdata.ks23.UserProfile;
+import java.time.Duration;
 import java.util.Optional;
-import org.apache.kafka.streams.processor.api.FixedKeyProcessor;
-import org.apache.kafka.streams.processor.api.FixedKeyProcessorContext;
-import org.apache.kafka.streams.processor.api.FixedKeyRecord;
+import org.apache.kafka.streams.processor.PunctuationType;
+import org.apache.kafka.streams.processor.api.Processor;
+import org.apache.kafka.streams.processor.api.ProcessorContext;
+import org.apache.kafka.streams.processor.api.Record;
 import org.apache.kafka.streams.state.KeyValueStore;
 import org.apache.kafka.streams.state.ValueAndTimestamp;
 
-public class JoiningProcessor implements FixedKeyProcessor<byte[], Sample, FullSample> {
+public class JoiningProcessor implements Processor<byte[], Sample, byte[], FullSample> {
 
+    private final Duration ticks;
+    private final Duration delayDuration;
 
     private KeyValueStore<Integer, ValueAndTimestamp<AdFeature>> adFeatureStore;
     private KeyValueStore<Integer, ValueAndTimestamp<UserProfile>> userProfileStore;
-    private FixedKeyProcessorContext<byte[], FullSample> context;
+    private ProcessorContext<byte[], FullSample> context;
 
-    @Override
-    public void init(final FixedKeyProcessorContext<byte[], FullSample> context) {
-        this.adFeatureStore = context.getStateStore(PreprocessingTopology.AD_FEATURE_STATE_STORE);
-        this.userProfileStore = context.getStateStore(PreprocessingTopology.USER_PROFILE_STATE_STORE);
-        this.context = context;
+    private KeyValueStore<Long, FullSample> delayStore;
+
+    public JoiningProcessor(final Duration ticks, final Duration delayDuration) {
+        this.ticks = ticks;
+        this.delayDuration = delayDuration;
     }
 
     @Override
-    public void process(final FixedKeyRecord<byte[], Sample> record) {
+    public void init(final ProcessorContext<byte[], FullSample> context) {
+        this.adFeatureStore = context.getStateStore(PreprocessingTopology.AD_FEATURE_STATE_STORE);
+        this.userProfileStore = context.getStateStore(PreprocessingTopology.USER_PROFILE_STATE_STORE);
+        this.delayStore = context.getStateStore(JoiningProcessorSupplier.DELAY_STORE_NAME);
+        this.context = context;
+        this.context.schedule(this.ticks, PunctuationType.WALL_CLOCK_TIME, new DelayPunctuator(
+                this.delayDuration.toMillis(),
+                this.delayStore,
+                context
+        ));
+    }
+
+    @Override
+    public void process(final Record<byte[], Sample> record) {
 
         final Sample value = record.value();
 
@@ -48,11 +65,12 @@ public class JoiningProcessor implements FixedKeyProcessor<byte[], Sample, FullS
                 .setAdFeature(adFeature)
                 .build();
 
-        this.context.forward(record.withValue(build));
+        this.delayStore.put(System.currentTimeMillis(), build);
     }
 
     @Override
     public void close() {
-        FixedKeyProcessor.super.close();
+        Processor.super.close();
     }
+
 }
