@@ -1,0 +1,25 @@
+{{- if .Values.autoscaling.keda.enabled }}
+{{- if .Values.autoscaling.hpa.enabled }}
+{{- fail "HPA and KEDA are mutually exclusive because KEDA creates its own HPA" }}
+{{- end }}
+{{- end }}
+{{- if .Values.autoscaling.keda.enabled }}
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: {{ include "rest-service.fullname" . }}
+  labels:
+    {{- include "rest-service.labels" . | nindent 4 }}
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ include "rest-service.fullname" . }}
+  pollingInterval:  {{ .Values.autoscaling.keda.pollingInterval }}
+  cooldownPeriod:   {{ .Values.autoscaling.keda.cooldownPeriod }}
+  idleReplicaCount: {{ .Values.autoscaling.keda.idleReplicaCount }}
+  minReplicas: {{ .Values.autoscaling.minReplicas }}
+  maxReplicas: {{ .Values.autoscaling.maxReplicas }}
+  triggers:
+  {{- .Values.autoscaling.keda.triggers | toYaml | nindent 4 }}
+{{- end }}

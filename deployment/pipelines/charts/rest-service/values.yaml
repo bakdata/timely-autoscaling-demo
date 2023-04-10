@@ -5,7 +5,7 @@ image:
 
 replicaCount: 1
 
-podAnnotation: { }
+podAnnotation: {}
 
 app:
   serviceType: ClusterIP
@@ -35,20 +35,27 @@ app:
   secret:
   # API_KEY: "Test"
 
-resources: { }
+resources: {}
 
 autoscaling:
-  enabled: false
   minReplicas: 1
   maxReplicas: 50
-  targetCPUUtilizationPercentage: 80
-  targetMemoryUtilizationPercentage: 80
+  hpa:
+    enabled: false
+    targetCPUUtilizationPercentage: 80
+    targetMemoryUtilizationPercentage: 80
+  keda:
+    enabled: false
+    idleReplicaCount: 0
+    pollingInterval: 30
+    cooldownPeriod: 300
+    triggers: []
 
-nodeSelector: { }
+nodeSelector: {}
 
-tolerations: [ ]
+tolerations: []
 
-affinity: { }
+affinity: {}
 
 service:
   type: ClusterIP
@@ -56,7 +63,7 @@ service:
 ingress:
   enabled: false
   className: ""
-  annotations: { }
+  annotations: {}
   # kubernetes.io/ingress.class: nginx
   # kubernetes.io/tls-acme: "true"
   hosts:
@@ -64,7 +71,7 @@ ingress:
       paths:
         - path: /
           pathType: ImplementationSpecific
-  tls: [ ]
+  tls: []
   #  - secretName: chart-example-tls
   #    hosts:
   #      - chart-example.local

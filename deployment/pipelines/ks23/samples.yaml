@@ -7,6 +7,7 @@
     deployment: true
     commandLine:
       KS23_PRODUCER_SAMPLE_ENABLED: "true"
+      KS23_PRODUCER_SAMPLE_MILLIS_TICKS: "250" # 4 w/s
     resources:
       limits:
         cpu: 2
@@ -81,6 +82,20 @@
       config: |
         ks23.rest.blocking-millis.mean=50
         ks23.rest.blocking-millis.std-dev=10
+
+    autoscaling:
+      minReplicas: 1
+      maxReplicas: 5
+      keda:
+        enabled: true
+        idleReplicaCount: 0
+        triggers:
+          - type: metrics-api
+            metadata:
+              targetValue: "20.0" # A single replica has ~20 RPS
+              url: "http://metrics-service/metrics/latest"
+              valueLocation: "uniqueElements.users"
+
 - type: rest-service
   name: ad-api
   app:
@@ -91,7 +106,21 @@
     app:
       config: |
         ks23.rest.blocking-millis.mean=500
-        ks23.rest.blocking-millis.std-dev=50
+        ks23.rest.blocking-millis.std-dev=10
+
+    autoscaling:
+      minReplicas: 1
+      maxReplicas: 5
+      keda:
+        enabled: true
+        idleReplicaCount: 0
+        triggers:
+          - type: metrics-api
+            metadata:
+              targetValue: "2.0" # A single replica has 2 RPS
+              url: "http://metrics-service/metrics/latest"
+              valueLocation: "uniqueElements.ads"
+
 - type: streams-app
   name: integrator
   app:
