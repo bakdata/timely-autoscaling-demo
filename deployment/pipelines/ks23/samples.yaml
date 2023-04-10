@@ -87,15 +87,20 @@
 
     autoscaling:
       minReplicas: 1
-      maxReplicas: 5
+      maxReplicas: 3
       keda:
-        enabled: false
+        enabled: true
         idleReplicaCount: 0
         triggers:
+          - type: kafka
+            metadata:
+              bootstrapServers: cluster-kafka-bootstrap.kafka:9092
+              consumerGroup: integrator
+              lagThreshold: "50"
           - type: metrics-api
             metadata:
               targetValue: "2" # A single replica has ~2 RPS
-              url: "http://metrics-service/metrics/latest"
+              url: "http://metrics-service-rest-service/metrics/latest"
               valueLocation: "uniqueElements.users"
 
 - type: rest-service
@@ -112,15 +117,20 @@
 
     autoscaling:
       minReplicas: 1
-      maxReplicas: 5
+      maxReplicas: 3
       keda:
-        enabled: false
+        enabled: true
         idleReplicaCount: 0
         triggers:
+          - type: kafka
+            metadata:
+              bootstrapServers: cluster-kafka-bootstrap.kafka:9092
+              consumerGroup: integrator
+              lagThreshold: "50"
           - type: metrics-api
             metadata:
               targetValue: "1.5" # A single replica has ~1.5 RPS
-              url: "http://metrics-service/metrics/latest"
+              url: "http://metrics-service-rest-service/metrics/latest"
               valueLocation: "uniqueElements.ads"
 
 - type: streams-app
@@ -144,14 +154,14 @@
         cpu: 500m
         memory: 600Mi
     autoscaling:
+      enabled: true
       consumerGroup: integrator
-      lagThreshold: 5 # Average target value to trigger scaling actions.
-      enabled: false
+      lagThreshold: 50 # Average target value to trigger scaling actions.
       pollingInterval: 30
       cooldownPeriod: 300
       offsetResetPolicy: earliest
       maxReplicas: 5
-      minReplicas: 0
+      minReplicas: 1
   from:
     topics:
       ${pipeline_name}-full-sample:
