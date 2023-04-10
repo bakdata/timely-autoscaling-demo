@@ -3,8 +3,9 @@ package com.bakdata.ks23.rest;
 
 import com.bakdata.ks23.rest.PredictionConfig.Distribution;
 import io.smallrye.mutiny.Uni;
-import java.time.Duration;
 import java.util.Random;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
@@ -18,6 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 public class PredictionResource {
+    private static final ExecutorService BLOCKING_THREAD = Executors.newFixedThreadPool(1);
     private final Random random;
     private final PredictionConfig config;
 
@@ -25,7 +27,6 @@ public class PredictionResource {
     public PredictionResource(final PredictionConfig config) {
         this.config = config;
         this.random = new Random();
-
     }
 
     @POST
@@ -53,27 +54,21 @@ public class PredictionResource {
     }
 
     private Uni<?> simulateWork() {
-        final long delay = Math.abs((long) this.drawFromDistribution(this.config.latencyMillis()));
-        return Uni.createFrom().nullItem()
-                // Block on default executor to simulate CPU utilization
-                .onItem().invoke(this::block)
-                // Delay for latency that allows concurrent
-                .onItem().delayIt().by(Duration.ofMillis(delay));
+        return Uni.createFrom().future(BLOCKING_THREAD.submit(this::block)).replaceWithVoid();
     }
-
 
     private void block() {
         final long delay = Math.abs((long) this.drawFromDistribution(this.config.blockingMillis()));
         try {
             Thread.sleep(delay);
         } catch (final InterruptedException e) {
-            throw new RuntimeException(e);
+            Thread.currentThread().interrupt();
+            throw new RuntimeException("Error while simulating work", e);
         }
     }
 
     private double drawFromDistribution(final Distribution distribution) {
         return this.random.nextGaussian(distribution.mean(), distribution.stdDev());
     }
-
 
 }

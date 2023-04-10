@@ -7,10 +7,7 @@ public interface PredictionConfig {
 
     Distribution prediction();
 
-    Distribution latencyMillis();
-
     Distribution blockingMillis();
-
 
     interface Distribution {
         double mean();
