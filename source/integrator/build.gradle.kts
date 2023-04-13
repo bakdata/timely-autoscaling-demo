@@ -20,13 +20,13 @@ dependencies {
     implementation(libs.quarkus.resteasy.reactive.jackson)
     implementation(libs.quarkus.kafkaStreams)
     implementation(libs.quarkus.kafka.registry)
+    implementation(libs.quarkus.health)
     implementation(libs.errorHandling)
     implementation(project(":kafka-common"))
     implementation(project(":streams-common"))
     implementation(libs.confluent.avro.serde) {
         exclude(group = "jakarta.ws.rs", module = "jakarta.ws.rs-api")
     }
-
 }
 
 tasks.getByName<Test>("test") {

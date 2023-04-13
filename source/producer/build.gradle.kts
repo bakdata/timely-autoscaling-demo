@@ -21,6 +21,7 @@ dependencies {
     implementation(libs.quarkus.resteasy.reactive.jackson)
     implementation(libs.quarkus.kafka)
     implementation(libs.quarkus.kafka.registry)
+    implementation(libs.quarkus.health)
     implementation(libs.confluent.avro.serializer) {
         exclude(group = "jakarta.ws.rs", module = "jakarta.ws.rs-api")
     }

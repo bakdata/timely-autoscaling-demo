@@ -21,6 +21,7 @@ dependencies {
     implementation(libs.quarkus.kafkaStreams)
     implementation(libs.quarkus.kafka.registry)
     implementation(libs.errorHandling)
+    implementation(libs.quarkus.health)
     implementation(project(":kafka-common"))
     implementation(project(":streams-common"))
     implementation(libs.confluent.avro.serde) {
