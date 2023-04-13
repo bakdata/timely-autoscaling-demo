@@ -1,4 +1,3 @@
-@Suppress("DSL_SCOPE_VIOLATION")
 plugins {
     id("java")
     alias(libs.plugins.quarkus)
@@ -15,7 +14,6 @@ repositories {
 
 dependencies {
     implementation(enforcedPlatform(libs.quarkus.platform))
-
     implementation(libs.quarkus.jib)
     implementation(libs.quarkus.arc)
     implementation(libs.quarkus.kafkaStreams)

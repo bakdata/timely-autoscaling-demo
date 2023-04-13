@@ -24,7 +24,7 @@ dependencies {
     implementation(libs.confluent.avro.serde) {
         exclude(group = "jakarta.ws.rs", module = "jakarta.ws.rs-api")
     }
-    implementation("io.quarkus:quarkus-confluent-registry-avro")
+    implementation(libs.quarkus.confluent.avro)
     implementation(project(":kafka-common"))
 
 

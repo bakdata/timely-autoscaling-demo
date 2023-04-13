@@ -14,6 +14,7 @@ quarkus_kafkaStreams = { group = "io.quarkus", name = "quarkus-kafka-streams" }
 quarkus_kafka_registry = { group = "io.quarkus", name = "quarkus-confluent-registry-avro" }
 quarkus_health = { group = "io.quarkus", name = "quarkus-smallrye-health" }
 quarkus_avro = { group = "io.quarkus", name = "quarkus-avro" }
+quarkus_confluent_avro = { group = "io.quarkus", name = "quarkus-confluent-registry-avro" }
 quarkus_junit = { group = "io.quarkus", name = "quarkus-junit5" }
 quarkus_junit_mockito = { group = "io.quarkus", name = "quarkus-junit5-mockito" }
 quarkus_jib = { group = "io.quarkus", name = "quarkus-container-image-jib" }
