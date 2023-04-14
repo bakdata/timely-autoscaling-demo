@@ -8,6 +8,29 @@
     commandLine:
       KS23_PRODUCER_SAMPLE_ENABLED: "true"
       KS23_PRODUCER_SAMPLE_MILLIS_TICKS: "250" # 4 w/s
+    ports:
+      - containerPort: 8080
+        name: "http"
+    livenessProbe:
+      failureThreshold: 3
+      periodSeconds: 10
+      timeoutSeconds: 10
+      successThreshold: 1
+      initialDelaySeconds: 5
+      httpGet:
+        path: /q/health/live
+        scheme: HTTP
+        port: 8080
+    readinessProbe:
+      failureThreshold: 3
+      timeoutSeconds: 10
+      periodSeconds: 10
+      successThreshold: 1
+      initialDelaySeconds: 5
+      httpGet:
+        path: /q/health/ready
+        scheme: HTTP
+        port: 8080
     resources:
       limits:
         cpu: 2
@@ -20,7 +43,7 @@
       ${pipeline_name}-sample:
         type: extra
         role: sample
-        partitions_count: 5
+        partitions_count: 6
 - type: rest-service
   name: metrics-service
   app:
@@ -69,7 +92,7 @@
     topics:
       ${pipeline_name}-full-sample:
         type: output
-        partitions_count: 5
+        partitions_count: 6
       ${pipeline_name}-preprocessor-error:
         type: error
         partitions_count: 4
@@ -87,7 +110,7 @@
 
     autoscaling:
       minReplicas: 1
-      maxReplicas: 3
+      maxReplicas: 5
       keda:
         enabled: true
         idleReplicaCount: 0
@@ -96,11 +119,11 @@
             metadata:
               bootstrapServers: cluster-kafka-bootstrap.kafka:9092
               consumerGroup: integrator
-              lagThreshold: "50"
+              lagThreshold: "5"
           - type: metrics-api
             metadata:
               targetValue: "2" # A single replica has ~2 RPS
-              url: "http://metrics-service-rest-service/metrics/latest"
+              url: "http://metrics-service-rest-service.pipeline.svc.cluster.local/metrics/latest"
               valueLocation: "uniqueElements.users"
 
 - type: rest-service
@@ -117,7 +140,7 @@
 
     autoscaling:
       minReplicas: 1
-      maxReplicas: 3
+      maxReplicas: 5
       keda:
         enabled: true
         idleReplicaCount: 0
@@ -126,11 +149,11 @@
             metadata:
               bootstrapServers: cluster-kafka-bootstrap.kafka:9092
               consumerGroup: integrator
-              lagThreshold: "50"
+              lagThreshold: "5"
           - type: metrics-api
             metadata:
               targetValue: "1.5" # A single replica has ~1.5 RPS
-              url: "http://metrics-service-rest-service/metrics/latest"
+              url: "http://metrics-service-rest-service.pipeline.svc.cluster.local/metrics/latest"
               valueLocation: "uniqueElements.ads"
 
 - type: streams-app
@@ -153,15 +176,52 @@
       requests:
         cpu: 500m
         memory: 600Mi
+    ports:
+      - containerPort: 8080
+        name: "http"
+        servicePort: 80
+    service:
+      enabled: true
+    livenessProbe:
+      failureThreshold: 3
+      periodSeconds: 10
+      timeoutSeconds: 10
+      successThreshold: 1
+      initialDelaySeconds: 5
+      httpGet:
+        path: /q/health/live
+        scheme: HTTP
+        port: 8080
+    readinessProbe:
+      failureThreshold: 3
+      timeoutSeconds: 10
+      periodSeconds: 10
+      successThreshold: 1
+      initialDelaySeconds: 5
+      httpGet:
+        path: /q/health/ready
+        scheme: HTTP
+        port: 8080
     autoscaling:
       enabled: true
       consumerGroup: integrator
-      lagThreshold: 50 # Average target value to trigger scaling actions.
+      lagThreshold: "5" # Average target value to trigger scaling actions.
       pollingInterval: 30
       cooldownPeriod: 300
       offsetResetPolicy: earliest
       maxReplicas: 5
       minReplicas: 1
+      additionalTriggers:
+        - type: metrics-api
+          metadata:
+            targetValue: "1.5" # A single replica has ~1.5 RPS
+            url: "http://metrics-service-rest-service.pipeline.svc.cluster.local/metrics/latest"
+            valueLocation: "uniqueElements.ads"
+        - type: metrics-api
+          metadata:
+            targetValue: "2" # A single replica has ~2 RPS
+            url: "http://metrics-service-rest-service.pipeline.svc.cluster.local/metrics/latest"
+            valueLocation: "uniqueElements.users"
   from:
     topics:
       ${pipeline_name}-full-sample:
@@ -170,7 +230,7 @@
     topics:
       ${pipeline_name}-sample-prediction:
         type: output
-        partitions_count: 5
+        partitions_count: 6
       ${pipeline_name}-integrator-error:
         type: error
         partitions_count: 4
